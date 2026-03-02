@@ -1,1 +1,323 @@
 # GEN-AI-LECTURE-SUMMARIZER-PROJECT
+
+
+## Environment Configuration
+
+This notebook pins specific library versions to ensure stability and reproducibility.
+
+### Transformers (4.40.2)
+Provides NLP pipelines for summarization and text generation.
+
+### PyTorch (2.2.1)
+Backend deep learning framework required by Transformers.
+
+### Streamlit
+Creates the web interface for the application.
+
+### pyngrok
+Exposes the local Streamlit server to a public URL.
+
+### pdfplumber
+Extracts structured text from PDF documents.
+
+Version pinning prevents breaking changes caused by automatic upgrades.
+
+
+## Application Script: AI Lecture Notes Summarizer (Streamlit App)
+
+This script builds a Streamlit web application that:
+
+1. Accepts a PDF lecture upload  
+2. Extracts text from the PDF  
+3. Splits the text into manageable chunks  
+4. Uses a transformer model to generate:
+   - Summary
+   - Key Points
+   - Flashcards  
+
+---
+
+### %%writefile app.py
+
+This magic command writes all the following code into a file named `app.py`.
+
+It allows us to:
+- Save the Streamlit app as a Python script
+- Run it using: `streamlit run app.py`
+
+---
+
+### Imports
+
+- `streamlit` → Web app interface
+- `pdfplumber` → Extracts text from PDFs
+- `transformers.pipeline` → Loads the NLP model
+- `textwrap` → Splits long text into smaller chunks
+
+---
+
+### Page Configuration
+
+`st.set_page_config()` sets the browser tab title.
+
+`st.title()` displays the app header.
+
+---
+
+### Model Loading with Caching
+
+`@st.cache_resource`
+
+This ensures:
+- The model loads only once
+- The app doesn’t reload the model on every interaction
+- Performance improves significantly
+
+Model used:
+`google/flan-t5-small`
+
+This is a lightweight instruction-following model suitable for summarization tasks.
+
+---
+
+### Text Extraction Function
+
+`extract_text(file)`
+
+Uses pdfplumber to:
+- Open the uploaded PDF
+- Extract text page by page
+- Combine into one continuous string
+
+`page.extract_text() or ""` prevents crashes if a page has no readable text.
+
+---
+
+### Chunking Function
+
+`chunk_text(text, chunk_size=1500)`
+
+Splits large lecture text into smaller pieces.
+
+Why chunking is required:
+- Transformer models have token limits
+- Large PDFs would otherwise crash the model
+- Improves stability
+
+---
+
+### Content Generation Functions
+
+Each function constructs a prompt and sends it to the model:
+
+1. `generate_summary(text)`
+   - Produces a concise lecture summary
+
+2. `generate_keypoints(text)`
+   - Extracts bullet-style key ideas
+
+3. `generate_flashcards(text)`
+   - Creates question-answer pairs for revision
+
+All functions use:
+- Controlled `max_length`
+- Prompt-based instruction
+
+---
+
+### File Upload
+
+`st.file_uploader()` allows users to upload a PDF file.
+
+The file is processed only if uploaded.
+
+---
+
+### Preview Section
+
+Displays the first 800 characters of extracted lecture text.
+
+Purpose:
+- Confirm extraction worked correctly
+- Detect OCR or formatting issues early
+
+---
+
+### Chunk Limiting
+
+`for chunk in chunks[:3]`
+
+Only the first 3 chunks are processed.
+
+Reason:
+- Prevents memory overload
+- Avoids long inference time
+- Reduces crash risk in Colab environment
+
+This is a performance safeguard.
+
+---
+
+### Output Display
+
+Streamlit UI components used:
+
+- `st.success()` → Summary
+- `st.info()` → Key Points
+- `st.warning()` → Flashcards
+
+Each section is visually separated for clarity.
+
+---
+
+## Overall Flow
+
+Upload PDF  
+→ Extract Text  
+→ Chunk Text  
+→ Generate AI Outputs  
+→ Display Study Materials  
+
+---
+
+## Important Limitations
+
+- Scanned PDFs (image-based) will not work without OCR.
+- Mathematical formulas may not be extracted correctly.
+- Only first 3 chunks are processed to prevent crashes.
+- Using `flan-t5-small` prioritizes speed over deep accuracy.
+
+For better quality:
+- Upgrade to `flan-t5-large`
+- Implement recursive summarization
+- Add structured flashcard formatting
+
+
+## Running the Streamlit App in Colab
+
+!streamlit run app.py &>/content/logs.txt &
+
+This command starts the Streamlit server in the background.
+
+- `streamlit run app.py`  
+  Launches the app on localhost (default port 8501).
+
+- `&> /content/logs.txt`  
+  Redirects all output and errors to a log file to keep the notebook clean.
+
+- `&`  
+  Runs the process in the background so the notebook can continue executing other cells.
+
+In Colab, this is required because we must:
+1. Start the app manually  
+2. Keep it running  
+3. Then expose it using ngrok
+
+## Configuring ngrok Authentication
+
+!ngrok config add-authtoken YOUR_AUTHTOKEN
+
+This command connects ngrok in Colab to your personal ngrok account.
+
+Why this is required:
+
+- The free anonymous version of ngrok has strict limitations.
+- Adding an authtoken unlocks your account permissions.
+- It allows creating tunnels tied to your dashboard.
+
+Without this step:
+- Tunnel creation may fail
+- Session limits are lower
+- You cannot manage endpoints properly
+
+The authtoken should be kept private and never shared publicly.
+
+
+
+## Installing Required Dependencies
+
+!pip install --upgrade pip
+!pip install transformers==4.40.2 torch==2.2.1 streamlit pyngrok pdfplumber
+
+### Upgrade pip
+Upgrades the Python package manager to the latest version.
+This helps avoid dependency resolution issues during installation.
+
+### Install Core Libraries
+
+- transformers==4.40.2  
+  Provides NLP pipelines for text generation and summarization.  
+  Version is pinned to avoid breaking API changes.
+
+- torch==2.2.1  
+  Deep learning backend required by Transformers.  
+  Version is pinned for compatibility and stability.
+
+- streamlit  
+  Used to build and run the web application interface.
+
+- pyngrok  
+  Exposes the local Streamlit server to a public URL from Colab.
+
+- pdfplumber  
+  Extracts text content from uploaded PDF lecture files.
+
+Version pinning ensures reproducibility and prevents unexpected
+failures caused by automatic upgrades.
+
+
+## Verifying Installed Transformers Version
+
+import transformers
+print("Transformers version:", transformers.__version__)
+
+This code checks the currently installed version of the
+`transformers` library.
+
+Why this matters:
+
+- Confirms that the pinned version (4.40.2) was installed correctly.
+- Helps debug compatibility issues if the app behaves unexpectedly.
+- Ensures reproducibility across different environments.
+
+If the printed version does not match the pinned version,
+the environment setup was not applied correctly.
+
+
+
+## Creating a Public URL with ngrok
+
+from pyngrok import ngrok
+public_url = ngrok.connect(8501)
+print(public_url)
+
+This code creates a secure public tunnel to the Streamlit app.
+
+- `ngrok.connect(8501)`  
+  Opens a tunnel to port 8501 (default Streamlit port).
+
+- `public_url`  
+  Stores the generated public link.
+
+- `print(public_url)`  
+  Displays the URL so the app can be accessed from outside Colab.
+
+Why this is required:
+
+Colab runs on a private local environment.
+ngrok exposes the local server to the internet so others can access it.
+
+
+## Stopping Existing ngrok Tunnels
+
+!pkill ngrok
+
+This command forcefully terminates all running ngrok processes.
+
+Why this is necessary:
+
+- Prevents exceeding ngrok session or endpoint limits.
+- Clears old or stuck tunnels from previous runs.
+- Avoids errors like “failed to start tunnel” or endpoint limit warnings.
+
+Use this before starting a new tunnel to ensure a clean session.
