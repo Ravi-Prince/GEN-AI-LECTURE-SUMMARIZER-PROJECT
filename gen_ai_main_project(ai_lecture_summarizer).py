@@ -42,7 +42,7 @@ Version pinning prevents breaking changes caused by automatic upgrades.
 # 
 # st.set_page_config(page_title="AI Lecture Notes Summarizer")
 # 
-# st.title("📚 AI Lecture Notes Summarizer")
+# st.title("AI Lecture Notes Summarizer")
 # 
 # @st.cache_resource
 # def load_model():
@@ -94,13 +94,13 @@ Version pinning prevents breaking changes caused by automatic upgrades.
 #                 combined_keypoints += generate_keypoints(chunk) + "\n"
 #                 combined_flashcards += generate_flashcards(chunk) + "\n"
 # 
-#         st.subheader("📝 Summary")
+#         st.subheader("Summary")
 #         st.success(combined_summary)
 # 
-#         st.subheader("📌 Key Points")
+#         st.subheader("Key Points")
 #         st.info(combined_keypoints)
 # 
-#         st.subheader("🎴 Flashcards")
+#         st.subheader("Flashcards")
 #         st.warning(combined_flashcards)
 
 """## Application Script: AI Lecture Notes Summarizer (Streamlit App)
